@@ -24,7 +24,7 @@ const (
 	GT       = ">"
 
 	EQ     = "=="
-	NOT_EQ = "!="
+	NotEq  = "!="
 	RETURN = "->"
 
 	COMMA     = ","
