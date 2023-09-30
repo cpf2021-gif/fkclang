@@ -123,6 +123,11 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
+	if p.curToken.Literal == "qinghe" {
+		msg := fmt.Sprint("could not use qinghe as identifier, this is a topic that cannot be touched")
+		p.errors = append(p.errors, msg)
+	}
+
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.ASSIGN) {
@@ -251,6 +256,11 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
+	if p.curToken.Literal == "qinghe" {
+		msg := fmt.Sprint("could not use qinghe as identifier, this is a topic that cannot be touched")
+		p.errors = append(p.errors, msg)
+	}
+
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
