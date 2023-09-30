@@ -3,12 +3,29 @@ package repl
 import (
 	"bufio"
 	"fkclang/lexer"
-	"fkclang/token"
+	"fkclang/parser"
 	"fmt"
 	"io"
 )
 
 const PROMPT = ">> "
+
+const FKC = `
+                   ,--.              
+    ,---,.     ,--/  /|    ,----..   
+  ,'  .' |  ,---,': / '   /   /   \  
+,---.'   |  :   : '/ /   |   :     : 
+|   |   .'  |   '   ,    .   |  ;. / 
+:   :  :    '   |  /     .   ; /---
+|   |  |-,  |   ;  ;     ;   | ;
+|   :  ;/|  :   '   \    |   : |     
+|   |   .'  |   |    '   .   | '___  
+'   :  '    '   : |.  \  '   ; : .'| 
+|   |  |    |   | '_\.'  '   | '/  :
+|   :  \    '   : |      |   :    /  
+|   | ,'    ;   |,'       \   \ .'   
+'---'      	'---'          '--'          
+`
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
@@ -22,9 +39,11 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
-		}
+		program := p.ParseProgram()
+
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
 	}
 }
