@@ -47,16 +47,16 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		_, _ = io.WriteString(out, program.String())
+		_, _ = io.WriteString(out, "\n")
 	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, FKC)
-	io.WriteString(out, "Woops! We have encountered some errors here!\n")
-	io.WriteString(out, "parser errors:\n")
+	_, _ = io.WriteString(out, FKC)
+	_, _ = io.WriteString(out, "Whoops! We have encountered some errors here!\n")
+	_, _ = io.WriteString(out, "parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		_, _ = io.WriteString(out, "\t"+msg+"\n")
 	}
 }
