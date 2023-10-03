@@ -36,6 +36,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return val
 		}
+
+		// 变量名不能与内置函数重名
+		if _, ok := builtins[node.Name.Value]; ok {
+			return newError("identifier can't use built-in function `%s`", node.Name.Value)
+		}
+
+		// can't redeclared
+		if _, ok := env.Get(node.Name.Value); ok {
+			return newError("can't not redeclared `%s`", node.Name.Value)
+		}
+
 		env.Set(node.Name.Value, val)
 
 	// Expressions
