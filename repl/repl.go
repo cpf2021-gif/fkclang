@@ -48,27 +48,32 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		userInput := strings.Join(inputs, "\n")
-		l := lexer.New(userInput)
-		p := parser.New(l)
+		onceExec(out, userInput, env)
+	}
+}
 
-		program := p.ParseProgram()
-		if len(p.Errors()) != 0 {
-			printParserErrors(out, p.Errors())
-			continue
-		}
+// 执行一次
+func onceExec(out io.Writer, input string, env *object.Environment) {
+	l := lexer.New(input)
+	p := parser.New(l)
 
-		evaluated := evaluator.Eval(program, env)
-		if evaluated != nil {
-			if evaluated.Type() == object.ErrorObj {
-				_, _ = io.WriteString(out, FKC)
-				_, _ = io.WriteString(out, "Whoops! We have encountered some errors here!\n")
-				_, _ = io.WriteString(out, "evaluate errors:\n")
-				_, _ = io.WriteString(out, "\t"+evaluated.Inspect())
-				_, _ = io.WriteString(out, "\n")
-			} else {
-				_, _ = io.WriteString(out, evaluated.Inspect())
-				_, _ = io.WriteString(out, "\n")
-			}
+	program := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		printParserErrors(out, p.Errors())
+		return
+	}
+
+	evaluated := evaluator.Eval(program, env)
+	if evaluated != nil {
+		if evaluated.Type() == object.ErrorObj {
+			_, _ = io.WriteString(out, FKC)
+			_, _ = io.WriteString(out, "Whoops! We have encountered some errors here!\n")
+			_, _ = io.WriteString(out, "evaluate errors:\n")
+			_, _ = io.WriteString(out, "\t"+evaluated.Inspect())
+			_, _ = io.WriteString(out, "\n")
+		} else {
+			_, _ = io.WriteString(out, evaluated.Inspect())
+			_, _ = io.WriteString(out, "\n")
 		}
 	}
 }
