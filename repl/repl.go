@@ -8,6 +8,7 @@ import (
 	"fkclang/parser"
 	"fmt"
 	"io"
+	"strings"
 )
 
 const PROMPT = ">> "
@@ -34,14 +35,20 @@ func Start(in io.Reader, out io.Writer) {
 	env := object.NewEnvironment()
 
 	for {
-		fmt.Println(PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
-			return
+		var inputs []string
+		fmt.Print(PROMPT)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				break
+			}
+			inputs = append(inputs, line)
+			fmt.Print("..")
 		}
 
-		line := scanner.Text()
-		l := lexer.New(line)
+		userInput := strings.Join(inputs, "\n")
+		l := lexer.New(userInput)
 		p := parser.New(l)
 
 		program := p.ParseProgram()
