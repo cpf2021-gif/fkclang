@@ -9,6 +9,7 @@ import (
 
 const (
 	IntegerObj     = "INTEGER"
+	StringObj      = "STRING"
 	BooleanObj     = "BOOLEAN"
 	NullObj        = "NULL"
 	ReturnValueObj = "RETURN_VALUE"
@@ -36,6 +37,13 @@ type Boolean struct {
 
 func (b *Boolean) Type() ObjectType { return BooleanObj }
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
+
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType { return StringObj }
+func (s *String) Inspect() string  { return s.Value }
 
 type Function struct {
 	Parameters []*ast.Identifier
