@@ -15,9 +15,11 @@ const (
 	ReturnValueObj = "RETURN_VALUE"
 	ErrorObj       = "ERROR"
 	FunctionObj    = "FUNCTION"
+	BuiltInObj     = "BUILTIN"
 )
 
 type ObjectType string
+type BuiltinFunction func(args ...Object) Object
 
 type Object interface {
 	Type() ObjectType
@@ -68,6 +70,13 @@ func (f Function) Inspect() string {
 
 	return out.String()
 }
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType { return BuiltInObj }
+func (b *Builtin) Inspect() string  { return "builtin function" }
 
 type Null struct{}
 
