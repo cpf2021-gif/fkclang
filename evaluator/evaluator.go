@@ -43,7 +43,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		// can't redeclared
-		if _, ok := env.Get(node.Name.Value); ok {
+		// 不能重声明应该针对的是当前的scope
+		if ok := env.HaveName(node.Name.Value); ok {
 			return newError("can't not redeclared `%s`", node.Name.Value)
 		}
 

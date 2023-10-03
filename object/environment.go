@@ -29,3 +29,8 @@ func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val
 }
+
+func (e *Environment) HaveName(name string) bool {
+	_, ok := e.store[name]
+	return ok
+}
