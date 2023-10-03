@@ -8,6 +8,7 @@ import (
 	"fkclang/parser"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -30,9 +31,32 @@ const FKC = `
  ---         ---           ---
 `
 
-func Start(in io.Reader, out io.Writer) {
+func Start(in io.Reader, out io.Writer, fileNames ...string) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
+
+	for _, fileName := range fileNames {
+		// 读取文件并执行
+		func() {
+			file, err := os.Open(fileName)
+			if err != nil {
+				panic(err)
+			}
+			defer func(file *os.File) {
+				err := file.Close()
+				if err != nil {
+					panic(err)
+				}
+			}(file)
+			fileScanner := bufio.NewScanner(file)
+			var inputs []string
+			for fileScanner.Scan() {
+				inputs = append(inputs, fileScanner.Text())
+			}
+			userInput := strings.Join(inputs, "\n")
+			onceExec(out, userInput, env)
+		}()
+	}
 
 	for {
 		var inputs []string
