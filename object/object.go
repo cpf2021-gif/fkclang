@@ -11,6 +11,7 @@ const (
 	IntegerObj     = "INTEGER"
 	StringObj      = "STRING"
 	BooleanObj     = "BOOLEAN"
+	ArrayObj       = "ARRAY"
 	NullObj        = "NULL"
 	ReturnValueObj = "RETURN_VALUE"
 	ErrorObj       = "ERROR"
@@ -96,3 +97,23 @@ type Error struct {
 
 func (e *Error) Type() ObjectType { return ErrorObj }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
+
+type Array struct {
+	Elements []Object
+}
+
+func (a *Array) Type() ObjectType { return ArrayObj }
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+
+	var elements []string
+	for _, e := range a.Elements {
+		elements = append(elements, e.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
