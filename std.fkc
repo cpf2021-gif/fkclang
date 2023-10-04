@@ -31,7 +31,11 @@ cong reduce = fk(arr, initial, f) {
 }
 
 cong sum = fk(arr) {
-    -> reduce(arr, 0, fk(initial, el) { -> initial + el; });
+    if (!isInteger(arr)) {
+        -> newError("Error: `sum` expects an array made of integers.");
+    } else {
+        -> reduce(arr, 0, fk(initial, el) { -> initial + el; });
+    }
 }
 
 cong max = fk(arr) {
