@@ -1,0 +1,86 @@
+cong map = fk(arr, f) {
+    cong iter = fk(arr, accumulated) {
+        if (len(arr) == 0) {
+            -> accumulated;
+        } else {
+            -> iter(rest(arr), push(accumulated, f(front(arr))));
+        }
+    }
+
+    if (!isInteger(arr)) {
+        -> newError("Error: `map` expects an array made of integers.");
+    } else {
+        -> iter(arr, []);
+    }
+}
+
+cong reduce = fk(arr, initial, f) {
+    cong iter = fk(arr, result) {
+        if (len(arr) == 0) {
+            -> result;
+        } else {
+            -> iter(rest(arr), f(result, front(arr)));
+        }
+    }
+
+    if (!isInteger(arr)) {
+        -> newError("Error: `reduce` expects an array made of integers.");
+    } else {
+        -> iter(arr, initial);
+    }
+}
+
+cong sum = fk(arr) {
+    -> reduce(arr, 0, fk(initial, el) { -> initial + el; });
+}
+
+cong max = fk(arr) {
+    if(!isInteger(arr)) {
+        -> newError("Error: `max` expects an array made of integers.");
+    } else {
+        -> reduce(arr, 0, fk(initial, el) { -> if (el > initial) { el; } else { initial; } });
+    }
+}
+
+cong min = fk(arr) {
+    if(!isInteger(arr)) {
+        -> newError("Error: `min` expects an array made of integers.");
+    } else {
+        -> reduce(arr, 0, fk(initial, el) { -> if (el < initial) { el; } else { initial; } });
+    }
+}
+
+cong merge = fk(left, right) {
+    cong merged = [];
+
+    cong mergeHelper = fk(acc, l, r) {
+        if (len(l) == 0) {
+            -> push(acc, r);
+        }
+        if (len(r) == 0) {
+            -> push(acc, l);
+        }
+        if (front(l) < front(r)) {
+            -> mergeHelper(push(acc, front(l)), rest(l), r);
+        } else{
+            -> mergeHelper(push(acc, front(r)), l, rest(r));
+        }
+    }
+
+    -> mergeHelper(merged, left, right);
+}
+
+cong sort = fk(arr) {
+    if (!isInteger(arr)) {
+        -> newError("Error: `sort` expects an array made of integers.");
+    } else {
+        if (len(arr) < 2) {
+            -> arr;
+        } else {
+            cong middle = len(arr) / 2;
+            cong left = sort(subArray(arr, 0, middle));
+            cong right = sort(subArray(arr, middle, len(arr)));
+            -> merge(sort(left), sort(right));
+        }
+    }
+}
