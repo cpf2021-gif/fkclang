@@ -115,6 +115,36 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
+	"unshift": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 2 {
+				return newError("wrong number of arguments. got=%d, want=2",
+					len(args))
+			}
+
+			if args[0].Type() != object.ArrayObj {
+				return newError("argument to `unshift` must be Array, got %s",
+					args[0].Type())
+			}
+
+			arr := args[0].(*object.Array)
+			length := len(arr.Elements)
+			if args[1].Type() != object.ArrayObj {
+				newElements := make([]object.Object, length+1)
+				copy(newElements[1:], arr.Elements)
+				newElements[0] = args[1]
+
+				return &object.Array{Elements: newElements}
+			} else {
+				arr1 := args[1].(*object.Array)
+				newElements := make([]object.Object, length+len(arr1.Elements))
+				copy(newElements[len(arr1.Elements):], arr.Elements)
+				copy(newElements, arr1.Elements)
+
+				return &object.Array{Elements: newElements}
+			}
+		},
+	},
 	"isInteger": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {

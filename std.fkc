@@ -88,3 +88,18 @@ cong sort = fk(arr) {
         }
     }
 }
+
+cong reverse = fk(arr) {
+    if (!isInteger(arr)) {
+        -> newError("Error: `reverse` expects an array made of integers.");
+    } else {
+        cong iter = fk(arr, acc) {
+            if (len(arr) == 0) {
+                -> acc;
+            } else {
+                -> iter(rest(arr), unshift(acc, front(arr)));
+            }
+        }
+        -> iter(arr, []);
+    }
+}
