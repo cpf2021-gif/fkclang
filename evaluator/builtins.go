@@ -3,6 +3,19 @@ package evaluator
 import "fkclang/object"
 
 var builtins = map[string]*object.Builtin{
+	"print": {
+		Fn: func(args ...object.Object) object.Object {
+			length := len(args)
+			for i, arg := range args {
+				print(arg.Inspect())
+				if (i + 1) < length {
+					print(" ")
+				}
+			}
+			println()
+			return NULL
+		},
+	},
 	"len": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
