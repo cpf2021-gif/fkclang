@@ -36,6 +36,7 @@ const (
 	RBRACE    = "}"
 	LBRACKET  = "["
 	RBRACKET  = "]"
+	COLON     = ":"
 
 	FUNCTION = "FK"
 	LET      = "Cong"

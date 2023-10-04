@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fkclang/ast"
 	"fmt"
+	"hash/fnv"
 	"strings"
 )
 
@@ -17,10 +18,20 @@ const (
 	ErrorObj       = "ERROR"
 	FunctionObj    = "FUNCTION"
 	BuiltInObj     = "BUILTIN"
+	MapObj         = "MAP"
 )
 
 type ObjectType string
 type BuiltinFunction func(args ...Object) Object
+
+type Hashtable interface {
+	HashKey() HashKey
+}
+
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
+}
 
 type Object interface {
 	Type() ObjectType
@@ -33,6 +44,9 @@ type Integer struct {
 
 func (i *Integer) Type() ObjectType { return IntegerObj }
 func (i *Integer) Inspect() string  { return fmt.Sprintf("%d", i.Value) }
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
 
 type Boolean struct {
 	Value bool
@@ -40,6 +54,16 @@ type Boolean struct {
 
 func (b *Boolean) Type() ObjectType { return BooleanObj }
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+
+	return HashKey{Type: b.Type(), Value: value}
+}
 
 type String struct {
 	Value string
@@ -47,6 +71,14 @@ type String struct {
 
 func (s *String) Type() ObjectType { return StringObj }
 func (s *String) Inspect() string  { return s.Value }
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	_, err := h.Write([]byte(s.Value))
+	if err != nil {
+		return HashKey{}
+	}
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
+}
 
 type Function struct {
 	Parameters []*ast.Identifier
@@ -114,6 +146,31 @@ func (a *Array) Inspect() string {
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
 	out.WriteString("]")
+
+	return out.String()
+}
+
+type Map struct {
+	Pairs map[HashKey]MapPair
+}
+
+type MapPair struct {
+	Key   Object
+	Value Object
+}
+
+func (m *Map) Type() ObjectType { return MapObj }
+func (m *Map) Inspect() string {
+	var out bytes.Buffer
+
+	var pairs []string
+	for _, pair := range m.Pairs {
+		pairs = append(pairs, pair.Key.Inspect()+":"+pair.Value.Inspect())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
 
 	return out.String()
 }
