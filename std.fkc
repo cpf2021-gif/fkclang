@@ -94,6 +94,14 @@ cong mergeDesc = fk(left, right) {
     -> mergeHelper(merged, left, right);
 }
 
+cong merge = fk(left, right, target) {
+    if (target == 0) {
+        -> mergeDesc(left, right);
+    } else {
+        -> mergeAsc(left, right);
+    }
+}
+
 cong sort = fk(arr, target) {
     if(!isInteger(target)) {
         -> newError("Error: `sort` expects a target of 0(desc) or 1(asc).");
@@ -110,11 +118,7 @@ cong sort = fk(arr, target) {
             cong middle = len(arr) / 2;
             cong left = sort(subArray(arr, 0, middle), target);
             cong right = sort(subArray(arr, middle, len(arr)), target);
-            if (target == 1) {
-                -> mergeAsc(left, right);
-            } else {
-                -> mergeDesc(left, right);
-            }
+            -> merge(left, right, target);
         }
     }
 }
