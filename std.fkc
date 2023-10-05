@@ -54,51 +54,40 @@ cong min = fk(arr) {
     }
 }
 
-cong mergeAsc = fk(left, right) {
-    cong merged = [];
-
-    cong mergeHelper = fk(acc, l, r) {
-        if (len(l) == 0) {
-            -> push(acc, r);
-        }
-        if (len(r) == 0) {
-            -> push(acc, l);
-        }
-        if (front(l) < front(r)) {
-            -> mergeHelper(push(acc, front(l)), rest(l), r);
-        } else{
-            -> mergeHelper(push(acc, front(r)), l, rest(r));
-        }
-    }
-
-    -> mergeHelper(merged, left, right);
-}
-
-cong mergeDesc = fk(left, right) {
-    cong merged = [];
-
-    cong mergeHelper = fk(acc, l, r) {
-        if (len(l) == 0) {
-            -> push(acc, r);
-        }
-        if (len(r) == 0) {
-            -> push(acc, l);
-        }
-        if (front(l) > front(r)) {
-            -> mergeHelper(push(acc, front(l)), rest(l), r);
-        } else{
-            -> mergeHelper(push(acc, front(r)), l, rest(r));
-        }
-    }
-
-    -> mergeHelper(merged, left, right);
-}
-
 cong merge = fk(left, right, target) {
+    cong merged = [];
     if (target == 0) {
-        -> mergeDesc(left, right);
+        cong mergeHelper = fk(acc, l, r) {
+            if (len(l) == 0) {
+                -> push(acc, r);
+            }
+            if (len(r) == 0) {
+                -> push(acc, l);
+            }
+            if (front(l) > front(r)) {
+                -> mergeHelper(push(acc, front(l)), rest(l), r);
+            } else{
+                -> mergeHelper(push(acc, front(r)), l, rest(r));
+            }
+        }
+
+        -> mergeHelper(merged, left, right);
     } else {
-        -> mergeAsc(left, right);
+        cong mergeHelper = fk(acc, l, r) {
+            if (len(l) == 0) {
+                -> push(acc, r);
+            }
+            if (len(r) == 0) {
+                -> push(acc, l);
+            }
+            if (front(l) < front(r)) {
+                -> mergeHelper(push(acc, front(l)), rest(l), r);
+            } else{
+                -> mergeHelper(push(acc, front(r)), l, rest(r));
+            }
+        }
+
+        -> mergeHelper(merged, left, right);
     }
 }
 
