@@ -54,5 +54,8 @@ go run main.go f1.fkc f2.fkc ...
 ```
 It will run all the files in order, and the result will be printed to the terminal.You can continue to input code in the terminal after the file is executed.
 
+# TODO
+- [ ] import module
+
 # Reference
 - [Writing An Interpreter In Go](https://interpreterbook.com/)
