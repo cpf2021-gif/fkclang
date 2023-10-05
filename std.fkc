@@ -54,7 +54,7 @@ cong min = fk(arr) {
     }
 }
 
-cong merge = fk(left, right) {
+cong mergeAsc = fk(left, right) {
     cong merged = [];
 
     cong mergeHelper = fk(acc, l, r) {
@@ -74,7 +74,33 @@ cong merge = fk(left, right) {
     -> mergeHelper(merged, left, right);
 }
 
-cong sort = fk(arr) {
+cong mergeDesc = fk(left, right) {
+    cong merged = [];
+
+    cong mergeHelper = fk(acc, l, r) {
+        if (len(l) == 0) {
+            -> push(acc, r);
+        }
+        if (len(r) == 0) {
+            -> push(acc, l);
+        }
+        if (front(l) > front(r)) {
+            -> mergeHelper(push(acc, front(l)), rest(l), r);
+        } else{
+            -> mergeHelper(push(acc, front(r)), l, rest(r));
+        }
+    }
+
+    -> mergeHelper(merged, left, right);
+}
+
+cong sort = fk(arr, target) {
+    if(!isInteger(target)) {
+        -> newError("Error: `sort` expects a target of 0(desc) or 1(asc).");
+    }
+    if(target * (target - 1) != 0) {
+        -> newError("Error: `sort` expects a target of 0(desc) or 1(asc).");
+    }
     if (!isInteger(arr)) {
         -> newError("Error: `sort` expects an array made of integers.");
     } else {
@@ -82,9 +108,13 @@ cong sort = fk(arr) {
             -> arr;
         } else {
             cong middle = len(arr) / 2;
-            cong left = sort(subArray(arr, 0, middle));
-            cong right = sort(subArray(arr, middle, len(arr)));
-            -> merge(sort(left), sort(right));
+            cong left = sort(subArray(arr, 0, middle), target);
+            cong right = sort(subArray(arr, middle, len(arr)), target);
+            if (target == 1) {
+                -> mergeAsc(left, right);
+            } else {
+                -> mergeDesc(left, right);
+            }
         }
     }
 }
