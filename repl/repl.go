@@ -74,21 +74,25 @@ func onceExec(out io.Writer, input string, env *object.Environment) {
 	if evaluated != nil {
 		if evaluated.Type() == object.ErrorObj {
 			errors := []string{
-				"\t" + evaluated.Inspect() + "\n",
+				evaluated.Inspect(),
 			}
-			printEvaluateErrors(out, errors)
+			printRunTimeErrors(out, errors)
 		} else {
 			_, _ = io.WriteString(out, evaluated.Inspect()+"\n")
 		}
 	}
 }
 
-func printEvaluateErrors(out io.Writer, errors []string) {
-	printErrors("evaluate", out, errors)
+func printImportErrors(out io.Writer, errors []string) {
+	printErrors("Import", out, errors)
+}
+
+func printRunTimeErrors(out io.Writer, errors []string) {
+	printErrors("Runtime", out, errors)
 }
 
 func printParserErrors(out io.Writer, errors []string) {
-	printErrors("parser", out, errors)
+	printErrors("Parser", out, errors)
 }
 
 func printErrors(errorType string, out io.Writer, errors []string) {
