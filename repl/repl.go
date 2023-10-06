@@ -16,13 +16,24 @@ import (
 const (
 	PROMPT      = ">> "
 	importRegex = `import\s+"([^"]+)"`
+	entryFile   = "main.fkc"
+	congRegex   = `cong\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=`
 )
+
+// 记录已经导入的文件
+var fileSet = make(map[string]struct{})
 
 func Start(in io.Reader, out io.Writer, fileNames ...string) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
 
-	ExecFiles(fileNames, out, env)
+	if len(fileNames) > 1 {
+		printErrors("Command", out, []string{"only one file can be executed at a time"})
+	} else if len(fileNames) == 1 && fileNames[0] != entryFile {
+		printErrors("Command", out, []string{"the entry file must be main.fkc"})
+	} else {
+		ExecFiles(fileNames, out, env)
+	}
 
 	for {
 		var inputs []string
@@ -34,7 +45,7 @@ func Start(in io.Reader, out io.Writer, fileNames ...string) {
 				break
 			}
 			inputs = append(inputs, line)
-			fmt.Print("..")
+			fmt.Print("...")
 		}
 
 		importFileNames, srcInput, errors := processInput(inputs)
@@ -49,7 +60,13 @@ func Start(in io.Reader, out io.Writer, fileNames ...string) {
 
 func ExecFiles(fileNames []string, out io.Writer, env *object.Environment) {
 	for _, fileName := range fileNames {
-		// 读取文件并执行
+		// 防止重复导入
+		if _, ok := fileSet[fileName]; ok {
+			continue
+		}
+		fileSet[fileName] = struct{}{}
+
+		// 读取文件
 		inputs, errors := readFile(fileName)
 		if len(errors) != 0 {
 			printImportErrors(out, errors)
@@ -61,7 +78,14 @@ func ExecFiles(fileNames []string, out io.Writer, env *object.Environment) {
 			break
 		}
 		ExecFiles(importFileNames, out, env)
-		onceExec(out, userInput, env)
+
+		// std.fkc => std.
+		if fileName == entryFile {
+			onceExec(out, userInput, env)
+		} else {
+			prefix := strings.Split(fileName, ".")[0] + "."
+			onceExec(out, userInput, env, prefix)
+		}
 	}
 }
 
@@ -118,8 +142,29 @@ func processInput(input []string) (importFilename []string, remainString string,
 }
 
 // 执行一次
-func onceExec(out io.Writer, input string, env *object.Environment) {
-	l := lexer.New(input)
+func onceExec(out io.Writer, input string, env *object.Environment, prefix ...string) {
+	// 词法分析
+	// 将input中所有的变量名替换为prefix+变量名
+	// cong a = 1 => cong prefix.a = 1
+	srcInput := input
+	if len(prefix) != 0 {
+		congPattern := regexp.MustCompile(congRegex)
+		// 找到所有的cong语句
+		matches := congPattern.FindAllStringSubmatch(srcInput, -1)
+		variableMap := make(map[string]string)
+
+		for _, match := range matches {
+			oldVar := match[1]
+			newVar := prefix[0] + oldVar
+			variableMap[oldVar] = newVar
+		}
+
+		for oldVar, newVar := range variableMap {
+			srcInput = strings.ReplaceAll(srcInput, oldVar, newVar)
+		}
+	}
+
+	l := lexer.New(srcInput)
 	p := parser.New(l)
 
 	program := p.ParseProgram()
@@ -128,7 +173,13 @@ func onceExec(out io.Writer, input string, env *object.Environment) {
 		return
 	}
 
-	evaluated := evaluator.Eval(program, env)
+	var evaluated object.Object
+	if len(prefix) != 0 {
+		evaluated = evaluator.Eval(program, env)
+	} else {
+		evaluated = evaluator.Eval(program, env)
+	}
+
 	if evaluated != nil {
 		if evaluated.Type() == object.ErrorObj {
 			errors := []string{
