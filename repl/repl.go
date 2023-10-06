@@ -31,30 +31,30 @@ func Start(in io.Reader, out io.Writer, fileNames ...string) {
 		printErrors("Command", out, []string{"only one file can be executed at a time"})
 	} else if len(fileNames) == 1 && fileNames[0] != entryFile {
 		printErrors("Command", out, []string{"the entry file must be main.fkc"})
-	} else {
+	} else if len(fileNames) == 1 && fileNames[0] == entryFile {
 		ExecFiles(fileNames, out, env)
-	}
+	} else {
+		for {
+			var inputs []string
+			fmt.Print(PROMPT)
 
-	for {
-		var inputs []string
-		fmt.Print(PROMPT)
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if line == "" {
-				break
+			for scanner.Scan() {
+				line := scanner.Text()
+				if line == "" {
+					break
+				}
+				inputs = append(inputs, line)
+				fmt.Print("...")
 			}
-			inputs = append(inputs, line)
-			fmt.Print("...")
-		}
 
-		importFileNames, srcInput, errors := processInput(inputs)
-		if len(errors) != 0 {
-			printImportErrors(out, errors)
-			continue
+			importFileNames, srcInput, errors := processInput(inputs)
+			if len(errors) != 0 {
+				printImportErrors(out, errors)
+				continue
+			}
+			ExecFiles(importFileNames, out, env)
+			onceExec(out, srcInput, env)
 		}
-		ExecFiles(importFileNames, out, env)
-		onceExec(out, srcInput, env)
 	}
 }
 

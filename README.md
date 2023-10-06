@@ -66,7 +66,6 @@ import "std.fkc"
 // use std.fkc's sort function
 print(std.sort([3, 2, 1], 1));
 ```
-You can continue to input code in the terminal after the file is executed.
 
 # TODO
 - [X] import module
