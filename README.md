@@ -55,16 +55,16 @@ You can run fkclang in two ways:
 ```bash
 ./fkclang
 ```
-- Run the interpreter with file
+- Run the interpreter with file called main.fkc
 ```bash
-./fkclang xx.fkc
+./fkclang main.fkc
 ```
-in the xx.fkc file, you can import other modules. For example:
+in the main.fkc file, you can import other modules. For example:
 ```
 import "std.fkc"
-import "test.fkc"
 
-// your code
+// use std.fkc's sort function
+print(std.sort([3, 2, 1], 1));
 ```
 You can continue to input code in the terminal after the file is executed.
 
