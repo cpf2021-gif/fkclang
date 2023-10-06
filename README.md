@@ -48,14 +48,21 @@ You can run fkclang in two ways:
 ```bash
 go run main.go
 ```
-- Run the interpreter with some file
+- Run the interpreter with file
 ```bash
-go run main.go f1.fkc f2.fkc ...
+go run main.go xx.fkc
+```
+in the xx.fkc file, you can import other modules. For example:
+```
+import "std.fkc"
+import "test.fkc"
+
+// your code
 ```
 It will run all the files in order, and the result will be printed to the terminal.You can continue to input code in the terminal after the file is executed.
 
 # TODO
-- [ ] import module
+- [X] import module
 
 # Reference
 - [Writing An Interpreter In Go](https://interpreterbook.com/)

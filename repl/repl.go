@@ -9,37 +9,20 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 )
 
-const PROMPT = ">> "
+const (
+	PROMPT      = ">> "
+	importRegex = `import\s+"([^"]+)"`
+)
 
 func Start(in io.Reader, out io.Writer, fileNames ...string) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
 
-	for _, fileName := range fileNames {
-		// 读取文件并执行
-		func() {
-			file, err := os.Open(fileName)
-			if err != nil {
-				panic(err)
-			}
-			defer func(file *os.File) {
-				err := file.Close()
-				if err != nil {
-					panic(err)
-				}
-			}(file)
-			fileScanner := bufio.NewScanner(file)
-			var inputs []string
-			for fileScanner.Scan() {
-				inputs = append(inputs, fileScanner.Text())
-			}
-			userInput := strings.Join(inputs, "\n")
-			onceExec(out, userInput, env)
-		}()
-	}
+	ExecFiles(fileNames, out, env)
 
 	for {
 		var inputs []string
@@ -54,9 +37,84 @@ func Start(in io.Reader, out io.Writer, fileNames ...string) {
 			fmt.Print("..")
 		}
 
-		userInput := strings.Join(inputs, "\n")
+		importFileNames, srcInput, errors := processInput(inputs)
+		if len(errors) != 0 {
+			printImportErrors(out, errors)
+			continue
+		}
+		ExecFiles(importFileNames, out, env)
+		onceExec(out, srcInput, env)
+	}
+}
+
+func ExecFiles(fileNames []string, out io.Writer, env *object.Environment) {
+	for _, fileName := range fileNames {
+		// 读取文件并执行
+		inputs, errors := readFile(fileName)
+		if len(errors) != 0 {
+			printImportErrors(out, errors)
+			break
+		}
+		importFileNames, userInput, errors := processInput(inputs)
+		if len(errors) != 0 {
+			printImportErrors(out, errors)
+			break
+		}
+		ExecFiles(importFileNames, out, env)
 		onceExec(out, userInput, env)
 	}
+}
+
+func readFile(fileName string) (src []string, errors []string) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, []string{"this module is not found"}
+	}
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
+	fileScanner := bufio.NewScanner(file)
+	var inputs []string
+	for fileScanner.Scan() {
+		inputs = append(inputs, fileScanner.Text())
+	}
+	return inputs, nil
+}
+
+// 处理输入
+// 将import和其他语句分开
+func processInput(input []string) (importFilename []string, remainString string, ParseErrors []string) {
+	var imports []string
+	remain := ""
+	importEnd := false
+	for _, line := range input {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "import") {
+			if importEnd {
+				return nil, "", []string{"import must be at the top of the file"}
+			}
+			// import "std.fkc" -> std.fkc
+			re := regexp.MustCompile(importRegex)
+			matches := re.FindStringSubmatch(trimmed)
+
+			if len(matches) > 1 {
+				fileName := matches[1]
+				imports = append(imports, fileName)
+			} else {
+				return nil, "", []string{`Error syntax of import, should be import "std.fkc"`}
+			}
+
+		} else {
+			if trimmed != "" {
+				if !importEnd {
+					importEnd = true
+				}
+				remain += line + "\n"
+			}
+		}
+	}
+
+	return imports, remain, nil
 }
 
 // 执行一次
