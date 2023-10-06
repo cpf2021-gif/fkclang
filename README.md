@@ -43,14 +43,21 @@ twice(addTwo, 2); // -> 6
 ```
 
 # Usage
+## Install
+First, you need to install Go and set the environment variables. Then you can clone the project and build it.
+```bash
+go build
+```
+when you run the command, you will get an executable file named fkclang.
+## Run
 You can run fkclang in two ways:
 - Run the interpreter directly
 ```bash
-go run main.go
+./fkclang
 ```
 - Run the interpreter with file
 ```bash
-go run main.go xx.fkc
+./fkclang xx.fkc
 ```
 in the xx.fkc file, you can import other modules. For example:
 ```
@@ -59,7 +66,7 @@ import "test.fkc"
 
 // your code
 ```
-It will run all the files in order, and the result will be printed to the terminal.You can continue to input code in the terminal after the file is executed.
+You can continue to input code in the terminal after the file is executed.
 
 # TODO
 - [X] import module
