@@ -8,6 +8,23 @@ import (
 	"strings"
 )
 
+const FKC = `
+                   ,--.              
+    ,---,.     ,--/  /|    ,----..   
+  ,'  .' |  ,---,': / '   /   /   \  
+,---.'   |  :   : '/ /   |   :     : 
+|   |   .'  |   '   ,    .   |  ;. / 
+:   :  :    '   |  /     .   ; /---
+|   |  |-,  |   ;  ;     ;   | ;
+|   :  ;/|  :   '   \    |   : |     
+|   |   .'  |   |    '   .   | '___  
+'   :  '    '   : |.  \  '   ; : .'| 
+|   |  |    |   | '_\.'  '   | '/  :
+|   :  \    '   : |      |   :    /  
+|   | ,'    ;   |,'       \   \ .'
+ ---         ---           ---
+`
+
 func main() {
 	u, err := user.Current()
 	if err != nil {
@@ -23,6 +40,7 @@ func main() {
 	// 检查文件后缀名
 	checkExtension(fileNames)
 
+	fmt.Print(FKC)
 	fmt.Printf("Hello %s! This is the FkCongLang programming language!\n",
 		u.Username)
 	fmt.Printf("Feel free to type in commands\n")

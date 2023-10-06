@@ -14,23 +14,6 @@ import (
 
 const PROMPT = ">> "
 
-const FKC = `
-                   ,--.              
-    ,---,.     ,--/  /|    ,----..   
-  ,'  .' |  ,---,': / '   /   /   \  
-,---.'   |  :   : '/ /   |   :     : 
-|   |   .'  |   '   ,    .   |  ;. / 
-:   :  :    '   |  /     .   ; /---
-|   |  |-,  |   ;  ;     ;   | ;
-|   :  ;/|  :   '   \    |   : |     
-|   |   .'  |   |    '   .   | '___  
-'   :  '    '   : |.  \  '   ; : .'| 
-|   |  |    |   | '_\.'  '   | '/  :
-|   :  \    '   : |      |   :    /  
-|   | ,'    ;   |,'       \   \ .'
- ---         ---           ---
-`
-
 func Start(in io.Reader, out io.Writer, fileNames ...string) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
@@ -90,22 +73,27 @@ func onceExec(out io.Writer, input string, env *object.Environment) {
 	evaluated := evaluator.Eval(program, env)
 	if evaluated != nil {
 		if evaluated.Type() == object.ErrorObj {
-			_, _ = io.WriteString(out, FKC)
-			_, _ = io.WriteString(out, "Whoops! We have encountered some errors here!\n")
-			_, _ = io.WriteString(out, "evaluate errors:\n")
-			_, _ = io.WriteString(out, "\t"+evaluated.Inspect())
-			_, _ = io.WriteString(out, "\n")
+			errors := []string{
+				"\t" + evaluated.Inspect() + "\n",
+			}
+			printEvaluateErrors(out, errors)
 		} else {
-			_, _ = io.WriteString(out, evaluated.Inspect())
-			_, _ = io.WriteString(out, "\n")
+			_, _ = io.WriteString(out, evaluated.Inspect()+"\n")
 		}
 	}
 }
 
+func printEvaluateErrors(out io.Writer, errors []string) {
+	printErrors("evaluate", out, errors)
+}
+
 func printParserErrors(out io.Writer, errors []string) {
-	_, _ = io.WriteString(out, FKC)
+	printErrors("parser", out, errors)
+}
+
+func printErrors(errorType string, out io.Writer, errors []string) {
 	_, _ = io.WriteString(out, "Whoops! We have encountered some errors here!\n")
-	_, _ = io.WriteString(out, "parser errors:\n")
+	_, _ = io.WriteString(out, errorType+" errors:\n")
 	for _, msg := range errors {
 		_, _ = io.WriteString(out, "\t"+msg+"\n")
 	}
