@@ -64,6 +64,29 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
+type SetStatement struct {
+	Token token.Token
+	Name  Expression
+	Value Expression
+}
+
+func (ss *SetStatement) statementNode()       {}
+func (ss *SetStatement) TokenLiteral() string { return ss.Token.Literal }
+func (ss *SetStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ss.TokenLiteral() + " ")
+	out.WriteString(ss.Name.String())
+	out.WriteString(" = ")
+
+	if ss.Value != nil {
+		out.WriteString(ss.Value.String())
+	}
+
+	out.WriteString(";")
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression

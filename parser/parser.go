@@ -115,6 +115,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.ParseLetStatement()
+	case token.SET:
+		return p.ParseSetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
@@ -142,6 +144,50 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 
 	p.nextToken()
 
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) ParseSetStatement() *ast.SetStatement {
+	stmt := &ast.SetStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+
+	if p.curToken.Literal == "qinghe" {
+		msg := fmt.Sprint("could not use qinghe as identifier, this is a topic that cannot be touched")
+		p.errors = append(p.errors, msg)
+	}
+
+	// 1. set a = 1
+	// 2. set a[0] = 1
+
+	tok := p.curToken
+	val := p.curToken.Literal
+
+	if p.peekTokenIs(token.LBRACKET) {
+		curToken := p.curToken
+		p.nextToken()
+		p.nextToken()
+		stmt.Name = &ast.IndexExpression{Token: curToken, Left: &ast.Identifier{Token: tok, Value: val}, Index: p.parseExpression(LOWEST)}
+		if !p.expectPeek(token.RBRACKET) {
+			return nil
+		}
+	} else {
+		stmt.Name = &ast.Identifier{Token: tok, Value: val}
+	}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
 	if p.peekTokenIs(token.SEMICOLON) {

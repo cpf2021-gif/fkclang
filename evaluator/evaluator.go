@@ -50,6 +50,67 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		env.Set(node.Name.Value, val)
 
+	case *ast.SetStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+
+		switch node.Name.(type) {
+
+		case *ast.Identifier:
+			if _, ok := builtins[node.Name.(*ast.Identifier).Value]; ok {
+				return newError("identifier can't use built-in function `%s`", node.Name.(*ast.Identifier).Value)
+			}
+
+			if _, ok := env.Get(node.Name.(*ast.Identifier).Value); !ok {
+				return newError("identifier not found: %s", node.Name.(*ast.Identifier).Value)
+			}
+			env.Set(node.Name.(*ast.Identifier).Value, val)
+
+		case *ast.IndexExpression:
+			left := Eval(node.Name.(*ast.IndexExpression).Left, env)
+			index := Eval(node.Name.(*ast.IndexExpression).Index, env)
+
+			if isError(left) {
+				return left
+			}
+			if isError(index) {
+				return index
+			}
+
+			// map and array
+			switch left.Type() {
+			case object.ArrayObj:
+				arrayObject := left.(*object.Array)
+				idx := index.(*object.Integer).Value
+				maxInx := int64(len(arrayObject.Elements) - 1)
+				if idx < 0 || idx > maxInx {
+					return newError("index out of range")
+				}
+				arrayObject.Elements[idx] = val
+				env.Set(node.Name.(*ast.IndexExpression).Left.(*ast.Identifier).Value, arrayObject)
+			case object.MapObj:
+				mapObject := left.(*object.Map)
+				key, ok := index.(object.Hashtable)
+				if !ok {
+					return newError("unusable as hash key: %s", index.Type())
+				}
+				pair, ok := mapObject.Pairs[key.HashKey()]
+				if !ok {
+					return newError("key not found")
+				}
+				pair.Value = val
+				mapObject.Pairs[key.HashKey()] = pair
+				env.Set(node.Name.(*ast.IndexExpression).Left.(*ast.Identifier).Value, mapObject)
+
+			default:
+				return newError("can't set `%s`", node.Name.(*ast.IndexExpression).Left.(*ast.Identifier).Value)
+			}
+		default:
+			return newError("unknown error in set statement")
+		}
+
 	// Expressions
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
