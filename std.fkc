@@ -116,13 +116,33 @@ cong reverse = fk(arr) {
     if (!isInteger(arr)) {
         -> newError("Error: `reverse` expects an array made of integers.");
     } else {
-        cong iter = fk(arr, acc) {
-            if (len(arr) == 0) {
-                -> acc;
+        cong iter = fk(arr, il, ir) {
+            if (il < ir) {
+               swap(arr, il, ir);
+               iter(arr, il + 1, ir - 1);
             } else {
-                -> iter(rest(arr), unshift(acc, front(arr)));
+                -> arr;
             }
         }
-        -> iter(arr, []);
+        cong rIdx = len(arr) - 1;
+        -> iter(arr, 0, rIdx);
+    }
+}
+
+cong swap = fk(arr, il, ir) {
+    if (!isInteger(arr)) {
+        -> newError("Error: `swap` expects an array made of integers.");
+    } else {
+        cong length = len(arr);
+        if (il * (length - il) < 0) {
+            -> newError("Error: `swap` expects a valid index.");
+        }
+        if (ir * (length - ir) < 0) {
+            -> newError("Error: `swap` expects a valid index.");
+        }
+
+        cong tmp = arr[il];
+        set arr[il] = arr[ir];
+        set arr[ir] = tmp;
     }
 }
