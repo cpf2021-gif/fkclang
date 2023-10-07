@@ -28,6 +28,9 @@ const (
 	NotEq  = "!="
 	RETURN = "->"
 
+	AND = "&&"
+	OR  = "||"
+
 	COMMA     = ","
 	SEMICOLON = ";"
 	LPAREN    = "("
